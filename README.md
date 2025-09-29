@@ -1,6 +1,6 @@
 # ProjectTrackingTemplate
 
-This repo contains the automations required for **project [Project Tracking Template v01](https://github.com/users/macrogreg/projects/3?pane=info)** and for other projects based on that.
+This repo contains the automations required for **project "[Project Tracking Template v01](https://github.com/users/macrogreg/projects/3?pane=info)"** and for other projects based on that.
 
 When you use that template to create a new project, you must clone this repo, point it to your new project, and respectively configure the security tokens for your project access.
 
@@ -31,6 +31,8 @@ Projects supported by `update-project-item-estimation.js`-script use two custom 
 
 The custom field `Days Estimate` is a _single number_ automatically computed based on those inputs. It is used for planning how long multiple sequential work items will take.  
 For that, `Days Estimate`-values of the respective work items are summed up.  The result represents the estimated number of **_working_ days** required to complete the work item(s), given the respective items' risk-confidence, and assuming **_full_ and _exclusive_ concentration** on that work.  
+
+See [Project Tracking Template v01](https://github.com/users/macrogreg/projects/3?pane=info) for additional info.
 
 
 ## Details
