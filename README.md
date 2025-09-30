@@ -73,7 +73,7 @@ __*__ An `XL`-sized item indicates that it may be not well-enough understood to 
 * `Low: well-understood` => (_Dm_ + _D_) / 2
 * `Mid: some unknowns` => _D_
 * `High: requires research` => _D_ × 1.5
-* `Severe: open-ended` => _D_ × 4 __*__
+* `Severe: open-ended` => _D_ × 4  (__*__)
 
 __*__ `Severe` risk-level indicates that the item is likely not well-enough understood to be included into timeline projections. Consider splitting such work into smaller, better understood work items. But if you really need to use `Severe`-risk work items, assume _D_ × 4 days (or more).
 

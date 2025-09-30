@@ -1,8 +1,8 @@
 name: Update Project Work Estimations
 
 on:
-  schedule:
-    - cron: '*/20 * * * *'  # Every 20 minutes
+  #schedule:
+  #  - cron: '*/20 * * * *'  # Every 20 minutes
 
   workflow_dispatch:
 

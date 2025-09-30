@@ -89,10 +89,16 @@ async function graphql(query, variables = {}) {
             },
         }
     );
+
     if (res.data.errors) {
-        console.error(JSON.stringify(res.data.errors, null, 2));
-        throw new Error("GraphQL error");
+        console.error("GraphQL call resulted in error.");
+
+        const errInfo = JSON.stringify(res.data.errors, null, 2)
+        console.error(errInfo);
+        
+        throw new Error("GraphQL error: " + errInfo);
     }
+
     return res.data;
 };
 
@@ -124,6 +130,12 @@ async function getFieldIds() {
     `;
 
     const projectNumber = parseInt(VAR_ESTIMATE_TARGET_PROJECT_ID, 10);
+
+    console.log("\n===========-===========-===========-===========-===========");
+    console.log("Getting GraphQL IDs:");
+    console.log("    Target project owner type: '" + ownerType + "'.");
+    console.log("    Target project owner name: '" + VAR_ESTIMATE_TARGET_OWNER_NAME + "'.");
+    console.log("    Target project number: " + projectNumber + ".");
 
     const data = await graphql(query, {
         owner: VAR_ESTIMATE_TARGET_OWNER_NAME,
