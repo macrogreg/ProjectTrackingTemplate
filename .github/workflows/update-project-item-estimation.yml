@@ -1,0 +1,33 @@
+name: Update Project Work Estimations
+
+on:
+  schedule:
+    - cron: '*/20 * * * *'  # Every 20 minutes
+
+  workflow_dispatch:
+
+jobs:
+  update_estimates:
+
+    if: false   # Toggle between true/false to enable/disable this workflow
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4        
+
+      - name: Install dependencies
+        run: npm install axios
+
+      - name: Run update-project-item-estimation script
+        env:
+          TOKEN_PROJECT_ACCESS_RW: ${{ secrets.CLASSIC_TOKEN_PROJECT_ACCESS_RW }}          
+          VAR_ESTIMATE_TARGET_OWNER_TYPE: ${{ vars.VAR_ESTIMATE_TARGET_OWNER_TYPE }}
+          VAR_ESTIMATE_TARGET_OWNER_NAME: ${{ vars.VAR_ESTIMATE_TARGET_OWNER_NAME }}
+          VAR_ESTIMATE_TARGET_PROJECT_ID: ${{ vars.VAR_ESTIMATE_TARGET_PROJECT_ID }}
+
+        run: node .github/scripts/update-project-item-estimation.js
