@@ -136,20 +136,7 @@ async function getFieldIds() {
     //     }
     // `;
 
-    const query = `
-        query {
-  viewer {
-    login
-    projectsV2(first: 10) {
-      nodes {
-        id
-        number
-        title
-      }
-    }
-  }
-}
-    `;
+    const query = `{ viewer { login projectsV2(first: 10) { nodes { number title } } } }`;
 
     const projectNumber = parseInt(VAR_ESTIMATE_TARGET_PROJECT_ID, 10);
 
