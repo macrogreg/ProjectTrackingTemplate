@@ -34,5 +34,5 @@ jobs:
         run: |
           curl -s -H "Authorization: Bearer $TOKEN_PROJECT_ACCESS_RW" \
             -H "Content-Type: application/json" \
-            -d '{"query":"{ viewer { login } }"}' \
+            -d '{"query":"{ viewer { login projectsV2(first: 10) { nodes { number title } } } }"}' \
             https://api.github.com/graphql
