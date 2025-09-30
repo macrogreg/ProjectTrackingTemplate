@@ -138,7 +138,8 @@ async function getFieldIds() {
 
     const query = `
         query {
-            user(login: "macrogreg") {
+            viewer {
+                login
                 projectV2(number: 3) {
                     id
                     fields(first: 100) {
