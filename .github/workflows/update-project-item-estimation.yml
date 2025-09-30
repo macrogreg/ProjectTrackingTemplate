@@ -9,7 +9,7 @@ on:
 jobs:
   update_estimates:
 
-    if: false   # Toggle between true/false to enable/disable this workflow
+    if: true   # Toggle between true/false to enable/disable this workflow
 
     runs-on: ubuntu-latest
 
