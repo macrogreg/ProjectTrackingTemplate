@@ -1,5 +1,44 @@
+//
+// Work item cost estimation logic.
+// See https://github.com/macrogreg/ProjectTrackingTemplate for info.
+//
+
+
+// Module imports:
 const axios = require('axios');
 
+
+// Configure the lookup table for the work item cost estimates.
+// This is a 2D table `ESTIMATED_COST_IN_DAYS[size][risk]` with cells containing the estimated effort in
+// working days, given the item's Size and Risk.
+// This doc explains how the numbers are determined:
+// https://github.com/macrogreg/ProjectTrackingTemplate#estimating-work-items-and-computing-time-effort
+function createEstimatedCostLookupTable() {
+
+    function estimatedCostTableRow(low, mid, high, severe) {
+        return {
+            ["LOW"]: low,
+            ["MID"]: mid, 
+            ["HIGH"]: high,
+            ["SEVERE"]: severe
+        };
+    }
+
+    const EstimatedCostInDays = {
+        ["XS"]: estimatedCostTableRow(  0.5,   1,   1.5,   4),
+        ["S"]:  estimatedCostTableRow(  2,     3,   4.5,  12),
+        ["M"]:  estimatedCostTableRow(  4,     5,   7.5,  20),
+        ["L"]:  estimatedCostTableRow(  7.5,  10,  15,    40),
+        ["XL"]: estimatedCostTableRow( 15,    20,  30,    80),
+    };
+
+    return EstimatedCostInDays;
+}
+
+const ESTIMATED_COST_IN_DAYS = createEstimatedCostLookupTable();
+
+
+// Read Env parameters. GH workflow calling this script should set them up.
 function loadEnvParameters() {
 
     const tokenTargetProjectRW = process.env.TOKEN_TARGET_PROJECT_RW;
@@ -44,36 +83,23 @@ function loadEnvParameters() {
 }
 
 
-function EstimatedCostTableRow(low, mid, high, severe) {
-    return {
-        ["LOW"]: low,
-        ["MID"]: mid, 
-        ["HIGH"]: high,
-        ["SEVERE"]: severe
-    };
-}
-
-
-function computeEstimatedCost(size, risk) {
-
-    const EstimatedCostInDays = {
-        ["XS"]: EstimatedCostTableRow(  0.5,   1,   1.5,   4),
-        ["S"]:  EstimatedCostTableRow(  2,     3,   4.5,  12),
-        ["M"]:  EstimatedCostTableRow(  4,     5,   7.5,  20),
-        ["L"]:  EstimatedCostTableRow(  7.5,  10,  15,    40),
-        ["XL"]: EstimatedCostTableRow( 15,    20,  30,    80),
-    };
+// Lookup the estimated work item cost in days from the `ESTIMATED_COST_IN_DAYS` table
+// using the specified `size` and `risk`.
+//     `size` comes in form: "Code (explanation)", e.g. "XS (1 ≤ day)"
+//     `risk` comes in form: "Code: explanation", e.g. "Low: well-understood".
+// Codes are parsed out and used for look-ups.
+function lookupEstimatedCost(size, risk) {
 
     const sizeKey = size?.split('(')[0].trim().toUpperCase();
     const riskKey = risk?.split(':')[0].trim().toUpperCase();
 
-    if (!(sizeKey in EstimatedCostInDays)) {
+    if (!(sizeKey in ESTIMATED_COST_IN_DAYS)) {
         const errMsg = `Invalid Size specifier: original value: "${size}"; key: "${sizeKey}".`;
         console.log(errMsg);
         throw new Error(errMsg);
     }
 
-    const costTableRow = EstimatedCostInDays[sizeKey];
+    const costTableRow = ESTIMATED_COST_IN_DAYS[sizeKey];
 
     if (!(riskKey in costTableRow)) {
         const errMsg = `Invalid Risk specifier: original value: "${risk}"; key: "${riskKey}".`;
@@ -82,11 +108,12 @@ function computeEstimatedCost(size, risk) {
     }
 
     const estimate = costTableRow[riskKey];
-    // console.log(`EstimatedCostInDays[${sizeKey}][${riskKey}]: '${estimate}'`);
+    // console.log(`ESTIMATED_COST_IN_DAYS[${sizeKey}][${riskKey}]: '${estimate}'`);
     return estimate;
 }
 
 
+// Execute a GraphGL call against the GitHub API.
 async function graphql(query, variables, bearerToken) {
 
     const EndpointUrl = "https://api.github.com/graphql";
@@ -115,6 +142,8 @@ async function graphql(query, variables, bearerToken) {
 };
 
 
+// GitHub GraphGL uses entity IDs to refer to items. This function looks up the respective ID needed to run later
+// queries. E.g. the ID of the target project, and the ID of the estimate field.
 async function getFieldIds(envParams) {
 
     const ownerType = envParams.varTargetProjectOwnerType.toLowerCase();
@@ -191,6 +220,9 @@ async function getFieldIds(envParams) {
 }
 
 
+// Gets all project work items. Uses paging (100 batches).
+// This should work for projects with several 1000s of items, but we have not perf-tested it for projects with 
+// several tens of thousands, let alone several hundreds of thousands of items.
 async function getProjectItems(projectId, tokenTargetProjectRW) {
     const query = `
         query($projectId: ID!, $cursor: String) {
@@ -263,6 +295,7 @@ async function getProjectItems(projectId, tokenTargetProjectRW) {
 }
 
 
+// Sets the estimate field of the specified item to the specified value.
 async function updateDaysEstimate(projectId, itemId, fieldId, newValue, tokenTargetProjectRW) {
 
     const mutation = `
@@ -292,6 +325,11 @@ async function updateDaysEstimate(projectId, itemId, fieldId, newValue, tokenTar
 }
 
 
+// Read Env params, get IDs to use for GraphQL lookups, get all work items from the target project.
+// For each work item:
+//     Get `Size` and `Risk`, compute the corresponding `Days Estimate` that the item should have;
+//     Get the actual `Days Estimate` set on the item. If it differs from what it should be, update accordingly;
+// Handle counts, totals, errors.
 async function main() {
 
     const envParams = loadEnvParameters();
@@ -331,7 +369,7 @@ async function main() {
                 continue;
             }
 
-            const estimate = computeEstimatedCost(size, risk);
+            const estimate = lookupEstimatedCost(size, risk);
             console.log(`Computed Estimate = '${estimate ?? "<not available>"}'.`);
 
             const existingEstimate = fields.find(f => f.field?.name.toLowerCase() === "days estimate")?.number;
@@ -366,6 +404,7 @@ async function main() {
 }
 
 
+// Top-scope main function invocation:
 main().catch(err => {
     console.error("Script failed:", err);
     process.exit(1);
