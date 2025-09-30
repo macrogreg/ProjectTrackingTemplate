@@ -2,7 +2,7 @@
 
 This repo contains the automations required for **project "[Project Tracking Template v01](https://github.com/users/macrogreg/projects/3?pane=info)"** and for other projects based on that.
 
-When you use that template to create a new project, you must clone this repo, point it to your new project, and respectively configure the security tokens for your project access.
+When you use that template to create a new project, you must clone this repo, point it to your new target project, and configure the security tokens for your project access (details [below](#configuring-target-project-and-security-tokens)).
 
 
 # Included automations
@@ -78,3 +78,65 @@ __*__ An `XL`-sized item indicates that it may be not well-enough understood to 
 __*__ `Severe` risk-level indicates that the item is likely not well-enough understood to be included into timeline projections. Consider splitting such work into smaller, better understood work items. But if you really need to use `Severe`-risk work items, assume _D_ × 4 days (or more).
 
 
+# Configuring Target Project and Security Tokens
+
+If you used the [project template](https://github.com/users/macrogreg/projects/3?pane=info) to create a new project and cloned this repo to enable the automations in your new project, you need to target the clone to your new project, and configure the security tokens so that the clone can access its new target.
+
+## Security token
+
+### Creating the token
+
+#### Projects owned by organizations
+If you project belongs to an organization you must configure a _fine-grained_ personal access token (PAT). Fine-grained PATs are configured under:
+ * `User` > `Settings` > `Developer Settings` > `Personal Access Tokens` > `Fine-grained tokens`  
+   [https://github.com/settings/personal-access-tokens](https://github.com/settings/personal-access-tokens)
+
+Create a new file-grained PAT. Settings:  
+_Token name_: a recommended pattern is `TOKEN_REPO_NAME_TARGET_PROJECT_RW`; e.g., the token for the upstream repo is called `TOKEN_PROJECT_TRACKING_TEMPLATE_TARGET_PROJECT_RW`, however, you can use any name you like.  
+_Resource owner_: The organization that owns the project.  
+_Repository access_: irrelevant since projects exist outside repos.
+_Permissions_: select `Projects` with _access_ set to `Read and write`.
+
+**(!)** Once created, remember to write down the token value in a secure location. Once you navigate away form that screen, the value can no longer be retrieved.
+
+#### Projects owned by individual users
+If you project belongs to a you must configure a _classic_ personal access token (PAT). Classic PATs are configured under:
+ * `User` > `Settings` > `Developer Settings` > `Personal Access Tokens` > `Tokens (classic)`  
+   [https://github.com/settings/tokens](https://github.com/settings/tokens)
+
+Create a new classic PAT. Settings:  
+_Token name_: a recommended pattern is `TOKEN_REPO_NAME_TARGET_PROJECT_RW`; e.g., the token for the upstream repo is called `TOKEN_PROJECT_TRACKING_TEMPLATE_TARGET_PROJECT_RW`, however, you can use any name you like.
+_Scopes_: select `projects` with _full control_ access.
+
+**(!)** Once created, remember to write down the token value in a secure location. Once you navigate away form that screen, the value can no longer be retrieved.
+
+### Storing the token as a secure secret
+
+The token belongs to a user and grants access either to projects within a specific organization or to all projects accessible to the user (see above). However, its value will be used by scripts in a repo. Next, you need to configure it for access to such scripts as a secure secret.
+
+Secrets are configured under:
+* `Repo` > `Settings` > `Secrets and variables` > `Actions`  
+  URL: `https://github.com/`_`repo_owner_org_or_user`_`/`_`repo_name`_`/settings/secrets/actions`  
+  Tab: `Secrets`
+
+Tap '_New repository secret_'. Use the name `TOKEN_TARGET_PROJECT_RW`. You can use any other valid name, but you will need to adjust the secret reference in the workflow to match it.  
+Enter the exact value of the token you created earlier into the _Secret_ field.
+
+Remember to rotate the token and to update the secret value once the token expirtion date is reached.
+
+## Configuration variables
+
+There are some additional non-secret variables that need to be configured under:
+
+Secrets are configured under:
+* `Repo` > `Settings` > `Secrets and variables` > `Actions`  
+  URL: `https://github.com/`_`repo_owner_org_or_user`_`/`_`repo_name`_`/settings/secrets/actions`  
+  Tab: `Variables`
+
+Tap '_New repository variable_'. to create a new clear-text variable. The following is required:
+  - `VAR_TARGET_PROJECT_OWNER_TYPE`: Either `organization` or `user`, depending on what type of entity owns the target project.
+  - `VAR_TARGET_PROJECT_OWNER_NAME`: A string denoting the name of the organization or the GitHub user who owns the target project.
+ - `VAR_TARGET_PROJECT_NUMBER_ID`: An integer denoting the project number within its owner container.  
+ When you open the project in the browser, the URL looks like:  
+ `https://github.com/`_`repo_owner_org_or_user`_`/projects/`_**`N`**_`/`  
+ There, '_**`N`**_' is the project number.

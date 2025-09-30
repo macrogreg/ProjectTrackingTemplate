@@ -1,37 +1,36 @@
 const axios = require('axios');
 
-const TOKEN_PROJECT_ACCESS_RW = process.env.TOKEN_PROJECT_ACCESS_RW;
+const TOKEN_TARGET_PROJECT_RW = process.env.TOKEN_TARGET_PROJECT_RW;
+const VAR_TARGET_PROJECT_OWNER_TYPE = process.env.VAR_TARGET_PROJECT_OWNER_TYPE;
+const VAR_TARGET_PROJECT_OWNER_NAME = process.env.VAR_TARGET_PROJECT_OWNER_NAME;
+const VAR_TARGET_PROJECT_NUMBER_ID = process.env.VAR_TARGET_PROJECT_NUMBER_ID;
 
-const VAR_ESTIMATE_TARGET_PROJECT_ID = process.env.VAR_ESTIMATE_TARGET_PROJECT_ID;
-const VAR_ESTIMATE_TARGET_OWNER_TYPE = process.env.VAR_ESTIMATE_TARGET_OWNER_TYPE;
-const VAR_ESTIMATE_TARGET_OWNER_NAME = process.env.VAR_ESTIMATE_TARGET_OWNER_NAME;
-
-if (!TOKEN_PROJECT_ACCESS_RW) {
-    throw new Error("`TOKEN_PROJECT_ACCESS_RW` is missing.");
+if (!TOKEN_TARGET_PROJECT_RW) {
+    throw new Error("`TOKEN_TARGET_PROJECT_RW` is missing.");
 }
 
-if (!VAR_ESTIMATE_TARGET_OWNER_TYPE) {
-    throw new Error("`VAR_ESTIMATE_TARGET_OWNER_TYPE` is missing.");
+if (!VAR_TARGET_PROJECT_OWNER_TYPE) {
+    throw new Error("`VAR_TARGET_PROJECT_OWNER_TYPE` is missing.");
 } else {
-    if (typeof VAR_ESTIMATE_TARGET_OWNER_TYPE !== "string") {
-        throw new Error("`VAR_ESTIMATE_TARGET_OWNER_TYPE` is not a string.");
+    if (typeof VAR_TARGET_PROJECT_OWNER_TYPE !== "string") {
+        throw new Error("`VAR_TARGET_PROJECT_OWNER_TYPE` is not a string.");
     }
 
-    let ownerTypeLower = VAR_ESTIMATE_TARGET_OWNER_TYPE.toLowerCase();
+    let ownerTypeLower = VAR_TARGET_PROJECT_OWNER_TYPE.toLowerCase();
     if (ownerTypeLower !== "organization"
             && ownerTypeLower !== "user") {
         throw new Error(
-            "`VAR_ESTIMATE_TARGET_OWNER_TYPE` is '" + VAR_ESTIMATE_TARGET_OWNER_TYPE
+            "`VAR_TARGET_PROJECT_OWNER_TYPE` is '" + VAR_TARGET_PROJECT_OWNER_TYPE
             + "', but one of the following was expected: ['organization', 'user'].");
     }
 }
 
-if (!VAR_ESTIMATE_TARGET_OWNER_NAME) {
-    throw new Error("`VAR_ESTIMATE_TARGET_OWNER_NAME` is missing.");
+if (!VAR_TARGET_PROJECT_OWNER_NAME) {
+    throw new Error("`VAR_TARGET_PROJECT_OWNER_NAME` is missing.");
 }
 
-if (!VAR_ESTIMATE_TARGET_PROJECT_ID) {
-    throw new Error("`VAR_ESTIMATE_TARGET_PROJECT_ID` is missing.");
+if (!VAR_TARGET_PROJECT_NUMBER_ID) {
+    throw new Error("`VAR_TARGET_PROJECT_NUMBER_ID` is missing.");
 }
 
 
@@ -85,7 +84,7 @@ async function graphql(query, variables = {}) {
         { query, variables },
         {
             headers: {
-                Authorization: `Bearer ${TOKEN_PROJECT_ACCESS_RW}`,
+                Authorization: `Bearer ${TOKEN_TARGET_PROJECT_RW}`,
                 'Content-Type': 'application/json',
             },
         }
@@ -106,7 +105,7 @@ async function graphql(query, variables = {}) {
 
 async function getFieldIds() {
 
-    const ownerType = VAR_ESTIMATE_TARGET_OWNER_TYPE.toLowerCase();
+    const ownerType = VAR_TARGET_PROJECT_OWNER_TYPE.toLowerCase();
 
     const query = `
         query($ownerName: String!, $projectNumber: Int!) {
@@ -130,19 +129,19 @@ async function getFieldIds() {
         }
     `;
     
-    const projectNumber = parseInt(VAR_ESTIMATE_TARGET_PROJECT_ID, 10);
+    const projectNumber = parseInt(VAR_TARGET_PROJECT_NUMBER_ID, 10);
 
     console.log("\n===========-===========-===========-===========-===========");
     console.log("Getting GraphQL IDs...");
-    console.log("    Target project security token: '..." + TOKEN_PROJECT_ACCESS_RW.slice(-4) + "'.");
+    console.log("    Target project security token: '..." + TOKEN_TARGET_PROJECT_RW.slice(-4) + "'.");
     console.log("    Target project owner type:     '" + ownerType + "'.");
-    console.log("    Target project owner name:     '" + VAR_ESTIMATE_TARGET_OWNER_NAME + "'.");
+    console.log("    Target project owner name:     '" + VAR_TARGET_PROJECT_OWNER_NAME + "'.");
     console.log("    Target project number:         " + projectNumber + ".");
 
     const data = await graphql(
         query,
         {
-            ownerName: VAR_ESTIMATE_TARGET_OWNER_NAME,
+            ownerName: VAR_TARGET_PROJECT_OWNER_NAME,
             projectNumber
         }
     );
