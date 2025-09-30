@@ -103,6 +103,8 @@ async function graphql(query, variables = {}) {
         }
     );
 
+    await ( new Promise( (resolve) => setTimeout(resolve, 2500)) );
+
     console.log("AXIOSing:");
 
     const res = await axios.post(
@@ -155,7 +157,7 @@ async function getFieldIds() {
     //     }
     // `;
 
-    const query = `viewer { login }`;
+    const query = `{ viewer { login } }`;
 
     const projectNumber = parseInt(VAR_ESTIMATE_TARGET_PROJECT_ID, 10);
 
