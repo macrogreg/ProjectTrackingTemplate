@@ -7,7 +7,7 @@ When you use that template to create a new project, you must clone this repo, po
 
 # Included automations
 
-## `/.github/workflows/update-project-item-estimation.yml`
+### `/.github/workflows/update-project-item-estimation.yml`
 
 Workflow to trigger the script that updates the estimates for time / effort required for completing work items.  
 This workflow is automatically triggered at regular time intervals, and can also be manually started when needed.  
@@ -15,7 +15,7 @@ This workflow is automatically triggered at regular time intervals, and can also
 The workflow uses GH secrets and variables to access configure the environment for the script it triggers.  
 Make sure to configure them accordingly if you close this repo.
 
-## `/.github/scripts/update-project-item-estimation.js`
+### `/.github/scripts/update-project-item-estimation.js`
 
 Script to automatically compute time / effort estimates for work items (see below for details).  
 The project where the work items to be estimated3ed are located is passed by the invoking workflow via the environment.  
