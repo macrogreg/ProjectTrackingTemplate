@@ -80,6 +80,9 @@ function computeEstimatedCost(size, risk) {
 
 async function graphql(query, variables = {}) {
 
+    console.log("QUERY:");
+    console.log(JSON.stringify(query));
+
     console.log("VARS:");
     console.log(JSON.stringify(variables));
 
