@@ -1,5 +1,3 @@
-const { exec } = require("child_process");
-
 const axios = require('axios');
 
 const TOKEN_PROJECT_ACCESS_RW = process.env.TOKEN_PROJECT_ACCESS_RW;
@@ -137,9 +135,9 @@ async function getFieldIds() {
     console.log("\n===========-===========-===========-===========-===========");
     console.log("Getting GraphQL IDs...");
     console.log("    Target project security token: '..." + TOKEN_PROJECT_ACCESS_RW.slice(-4) + "'.");
-    console.log("    Target project owner type: '" + ownerType + "'.");
-    console.log("    Target project owner name: '" + VAR_ESTIMATE_TARGET_OWNER_NAME + "'.");
-    console.log("    Target project number: " + projectNumber + ".");
+    console.log("    Target project owner type:     '" + ownerType + "'.");
+    console.log("    Target project owner name:     '" + VAR_ESTIMATE_TARGET_OWNER_NAME + "'.");
+    console.log("    Target project number:         " + projectNumber + ".");
 
     const data = await graphql(
         query,
@@ -173,9 +171,9 @@ async function getFieldIds() {
         projectId: ownerData.projectV2.id
     };
 
-    console.log("Getting GraphQL IDs retrieved.");
+    console.log("GraphQL IDs retrieved.");
     console.log("    `Days Estimate` field: '" + fieldIds.daysEstimateFieldId + "'.");
-    console.log("    Target project: '" + fieldIds.projectId + "'.");
+    console.log("    Target project:        '" + fieldIds.projectId + "'.");
 
     return fieldIds;
 }
