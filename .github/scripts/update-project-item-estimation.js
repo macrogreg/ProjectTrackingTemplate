@@ -1,36 +1,46 @@
 const axios = require('axios');
 
-const TOKEN_TARGET_PROJECT_RW = process.env.TOKEN_TARGET_PROJECT_RW;
-const VAR_TARGET_PROJECT_OWNER_TYPE = process.env.VAR_TARGET_PROJECT_OWNER_TYPE;
-const VAR_TARGET_PROJECT_OWNER_NAME = process.env.VAR_TARGET_PROJECT_OWNER_NAME;
-const VAR_TARGET_PROJECT_NUMBER_ID = process.env.VAR_TARGET_PROJECT_NUMBER_ID;
+function loadEnvParameters() {
 
-if (!TOKEN_TARGET_PROJECT_RW) {
-    throw new Error("`TOKEN_TARGET_PROJECT_RW` is missing.");
-}
+    const tokenTargetProjectRW = process.env.TOKEN_TARGET_PROJECT_RW;
+    const varTargetProjectOwnerType = process.env.VAR_TARGET_PROJECT_OWNER_TYPE;
+    const varTargetProjectOwnerName = process.env.VAR_TARGET_PROJECT_OWNER_NAME;
+    const varTargetProjectNumberId = process.env.VAR_TARGET_PROJECT_NUMBER_ID;
 
-if (!VAR_TARGET_PROJECT_OWNER_TYPE) {
-    throw new Error("`VAR_TARGET_PROJECT_OWNER_TYPE` is missing.");
-} else {
-    if (typeof VAR_TARGET_PROJECT_OWNER_TYPE !== "string") {
-        throw new Error("`VAR_TARGET_PROJECT_OWNER_TYPE` is not a string.");
+    if (!tokenTargetProjectRW) {
+        throw new Error("`TOKEN_TARGET_PROJECT_RW` is missing.");
     }
 
-    let ownerTypeLower = VAR_TARGET_PROJECT_OWNER_TYPE.toLowerCase();
-    if (ownerTypeLower !== "organization"
-            && ownerTypeLower !== "user") {
-        throw new Error(
-            "`VAR_TARGET_PROJECT_OWNER_TYPE` is '" + VAR_TARGET_PROJECT_OWNER_TYPE
-            + "', but one of the following was expected: ['organization', 'user'].");
+    if (!varTargetProjectOwnerType) {
+        throw new Error("`VAR_TARGET_PROJECT_OWNER_TYPE` is missing.");
+    } else {
+        if (typeof varTargetProjectOwnerType !== "string") {
+            throw new Error("`VAR_TARGET_PROJECT_OWNER_TYPE` is not a string.");
+        }
+
+        let ownerTypeLower = varTargetProjectOwnerType.toLowerCase();
+        if (ownerTypeLower !== "organization"
+                && ownerTypeLower !== "user") {
+            throw new Error(
+                "`VAR_TARGET_PROJECT_OWNER_TYPE` is '" + varTargetProjectOwnerType
+                + "', but one of the following was expected: ['organization', 'user'].");
+        }
     }
-}
 
-if (!VAR_TARGET_PROJECT_OWNER_NAME) {
-    throw new Error("`VAR_TARGET_PROJECT_OWNER_NAME` is missing.");
-}
+    if (!varTargetProjectOwnerName) {
+        throw new Error("`VAR_TARGET_PROJECT_OWNER_NAME` is missing.");
+    }
 
-if (!VAR_TARGET_PROJECT_NUMBER_ID) {
-    throw new Error("`VAR_TARGET_PROJECT_NUMBER_ID` is missing.");
+    if (!varTargetProjectNumberId) {
+        throw new Error("`VAR_TARGET_PROJECT_NUMBER_ID` is missing.");
+    }
+
+    return {
+        tokenTargetProjectRW,
+        varTargetProjectOwnerType,
+        varTargetProjectOwnerName,
+        varTargetProjectNumberId
+    };
 }
 
 
@@ -77,14 +87,16 @@ function computeEstimatedCost(size, risk) {
 }
 
 
-async function graphql(query, variables = {}) {
+async function graphql(query, variables, bearerToken) {
 
-        const res = await axios.post(
-        'https://api.github.com/graphql',
+    const EndpointUrl = "https://api.github.com/graphql";
+
+    const res = await axios.post(
+        EndpointUrl,
         { query, variables },
         {
             headers: {
-                Authorization: `Bearer ${TOKEN_TARGET_PROJECT_RW}`,
+                Authorization: `Bearer ${bearerToken}`,
                 'Content-Type': 'application/json',
             },
         }
@@ -103,9 +115,10 @@ async function graphql(query, variables = {}) {
 };
 
 
-async function getFieldIds() {
+async function getFieldIds(envParams) {
 
-    const ownerType = VAR_TARGET_PROJECT_OWNER_TYPE.toLowerCase();
+    const ownerType = envParams.varTargetProjectOwnerType.toLowerCase();
+    const projectNumber = parseInt(envParams.varTargetProjectNumberId, 10);
 
     const query = `
         query($ownerName: String!, $projectNumber: Int!) {
@@ -128,22 +141,21 @@ async function getFieldIds() {
             }
         }
     `;
-    
-    const projectNumber = parseInt(VAR_TARGET_PROJECT_NUMBER_ID, 10);
 
     console.log("\n===========-===========-===========-===========-===========");
-    console.log("Getting GraphQL IDs...");
-    console.log("    Target project security token: '..." + TOKEN_TARGET_PROJECT_RW.slice(-4) + "'.");
-    console.log("    Target project owner type:     '" + ownerType + "'.");
-    console.log("    Target project owner name:     '" + VAR_TARGET_PROJECT_OWNER_NAME + "'.");
-    console.log("    Target project number:         " + projectNumber + ".");
+    console.log("Getting GraphQL IDs for Target Project...");
+    console.log("    Security token: '..." + envParams.tokenTargetProjectRW.slice(-4) + "'.");
+    console.log("    Owner type:     '" + ownerType + "'.");
+    console.log("    Owner name:     '" + envParams.varTargetProjectOwnerName + "'.");
+    console.log("    Project number: " + projectNumber + ".");
 
     const data = await graphql(
         query,
         {
-            ownerName: VAR_TARGET_PROJECT_OWNER_NAME,
+            ownerName: envParams.varTargetProjectOwnerName,
             projectNumber
-        }
+        },
+        envParams.tokenTargetProjectRW
     );
 
     const ownerData = (ownerType === "organization") ? data.data.organization
@@ -151,7 +163,8 @@ async function getFieldIds() {
                         : undefined;
 
     if (!ownerData) {
-        console.error("The getFieldIds query did not fail, but the owner data is not available (ownerType = '"+ownerType+"'). Fatal errors will likely follow.");
+        console.error("The getFieldIds query did not fail, but the owner data is not available"
+                    + " (ownerType = '"+ownerType+"'). Fatal errors will likely follow.");
     }
 
     const getFieldIdByName = (name) => {
@@ -178,7 +191,7 @@ async function getFieldIds() {
 }
 
 
-async function getProjectItems(projectId) {
+async function getProjectItems(projectId, tokenTargetProjectRW) {
     const query = `
         query($projectId: ID!, $cursor: String) {
             node(id: $projectId) {
@@ -238,7 +251,7 @@ async function getProjectItems(projectId) {
             cursor: cursor,
         };
 
-        const data = await graphql(query, variables);
+        const data = await graphql(query, variables, tokenTargetProjectRW);
         const page = data.data.node.items;
 
         items.push(...page.nodes);
@@ -250,7 +263,8 @@ async function getProjectItems(projectId) {
 }
 
 
-async function updateDaysEstimate(projectId, itemId, fieldId, value) {
+async function updateDaysEstimate(projectId, itemId, fieldId, newValue, tokenTargetProjectRW) {
+
     const mutation = `
         mutation($input: UpdateProjectV2ItemFieldValueInput!) {
             updateProjectV2ItemFieldValue(input: $input) {
@@ -261,23 +275,31 @@ async function updateDaysEstimate(projectId, itemId, fieldId, value) {
         }
     `;
 
-    await graphql(mutation, {
-        input: {
-            projectId,
-            itemId,
-            fieldId,
-            value: {
-                number: value
+    await graphql(
+        mutation,
+        {
+            input: {
+                projectId,
+                itemId,
+                fieldId,
+                value: {
+                    number: newValue
+                }
             }
-        }
-    });
+        },
+        tokenTargetProjectRW
+    );
 }
 
 
 async function main() {
-    const { daysEstimateFieldId, projectId } = await getFieldIds();
 
-    const items = await getProjectItems(projectId);
+    const envParams = loadEnvParameters();
+    const tokenTargetProjectRW = envParams.tokenTargetProjectRW;
+
+    const { daysEstimateFieldId, projectId } = await getFieldIds(envParams);
+
+    const items = await getProjectItems(projectId, tokenTargetProjectRW);
 
     let countTotalItems = 0;
     let countChangedItems = 0;
@@ -323,7 +345,7 @@ async function main() {
                 continue;
             }
 
-            await updateDaysEstimate(projectId, item.id, daysEstimateFieldId, estimate);
+            await updateDaysEstimate(projectId, item.id, daysEstimateFieldId, estimate, tokenTargetProjectRW);
             countChangedItems++;
 
             console.log(`Item #${countTotalItems} updated. This was update #${countChangedItems}.`);
