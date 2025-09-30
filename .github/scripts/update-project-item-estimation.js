@@ -79,6 +79,10 @@ function computeEstimatedCost(size, risk) {
 
 
 async function graphql(query, variables = {}) {
+
+    console.log("VARS:");
+    console.log(JSON.stringify(variables));
+
     const res = await axios.post(
         'https://api.github.com/graphql',
         { query, variables },
@@ -95,7 +99,7 @@ async function graphql(query, variables = {}) {
 
         const errInfo = JSON.stringify(res.data.errors, null, 2)
         console.error(errInfo);
-        
+
         throw new Error("GraphQL error: " + errInfo);
     }
 
@@ -137,10 +141,13 @@ async function getFieldIds() {
     console.log("    Target project owner name: '" + VAR_ESTIMATE_TARGET_OWNER_NAME + "'.");
     console.log("    Target project number: " + projectNumber + ".");
 
-    const data = await graphql(query, {
-        owner: VAR_ESTIMATE_TARGET_OWNER_NAME,
-        projectNumber
-    });
+    const data = await graphql(
+        query,
+        {
+            owner: VAR_ESTIMATE_TARGET_OWNER_NAME,
+            projectNumber
+        }
+    );
 
     const fields = data.data.organization.projectV2.fields.nodes;
 
