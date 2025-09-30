@@ -30,4 +30,9 @@ jobs:
           VAR_ESTIMATE_TARGET_OWNER_NAME: ${{ vars.VAR_ESTIMATE_TARGET_OWNER_NAME }}
           VAR_ESTIMATE_TARGET_PROJECT_ID: ${{ vars.VAR_ESTIMATE_TARGET_PROJECT_ID }}
 
-        run: node .github/scripts/update-project-item-estimation.js
+        #run: node .github/scripts/update-project-item-estimation.js
+        run: |
+          curl -s -H "Authorization: Bearer $TOKEN_PROJECT_ACCESS_RW" \
+            -H "Content-Type: application/json" \
+            -d '{"query":"{ viewer { login } }"}' \
+            https://api.github.com/graphql
