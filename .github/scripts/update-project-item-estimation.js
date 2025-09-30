@@ -114,10 +114,32 @@ async function getFieldIds() {
 
     const ownerType = VAR_ESTIMATE_TARGET_OWNER_TYPE.toLowerCase();
 
+    // const query = `
+    //     query($owner: String!, $projectNumber: Int!) {
+    //         user(login: $owner) {
+    //             projectV2(number: $projectNumber) {
+    //                 id
+    //                 fields(first: 100) {
+    //                     nodes {
+    //                         ... on ProjectV2SingleSelectField {
+    //                             id
+    //                             name
+    //                         }
+    //                         ... on ProjectV2FieldCommon {
+    //                             id
+    //                             name
+    //                         }
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     }
+    // `;
+
     const query = `
-        query($owner: String!, $projectNumber: Int!) {
-            user(login: $owner) {
-                projectV2(number: $projectNumber) {
+        query {
+            user(login: "macrogreg") {
+                projectV2(number: 3) {
                     id
                     fields(first: 100) {
                         nodes {
