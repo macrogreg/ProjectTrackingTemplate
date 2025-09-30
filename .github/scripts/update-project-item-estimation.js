@@ -320,13 +320,15 @@ async function main() {
                 continue;
             }
 
-            await updateDaysEstimate(projectId, item.id, daysEstimate, estimate);
+            await updateDaysEstimate(projectId, item.id, daysEstimateFieldId, estimate);
             countChangedItems++;
 
             console.log(`Item #${countTotalItems} updated. This was update #${countChangedItems}.`);
             
         } catch(err) {
             countErrItems++;
+            
+            const title = item.content?.title || "<no title>";
             console.log(`Error processing item id='${item.id}', title="${title}":`);
             console.log(`ERROR: "${err.message ?? err}"`);
         }
