@@ -82,32 +82,7 @@ function computeEstimatedCost(size, risk) {
 
 async function graphql(query, variables = {}) {
 
-    console.log("QUERY:");
-    console.log(JSON.stringify(query));
-
-    console.log("VARS:");
-    console.log(JSON.stringify(variables));
-
-    console.log("CURLing:");
-
-    exec(
-        `curl -s -H "Authorization: Bearer ${TOKEN_PROJECT_ACCESS_RW}" -H "Content-Type: application/json" -d '{"query":"{ viewer { login projectsV2(first: 10) { nodes { number title } } } }"}' https://api.github.com/graphql`,
-        (error, stdout, stderr) => {
-            console.log("Output:", stdout);
-            if (error) {
-                console.error("Error:", error.message);                
-            }
-            if (stderr) {
-                console.error("Stderr:", stderr);                
-            }
-        }
-    );
-
-    await ( new Promise( (resolve) => setTimeout(resolve, 2500)) );
-
-    console.log("AXIOSing:");
-
-    const res = await axios.post(
+        const res = await axios.post(
         'https://api.github.com/graphql',
         { query, variables },
         {
@@ -118,13 +93,13 @@ async function graphql(query, variables = {}) {
         }
     );
 
-    if (res.data.errors) {
-        console.error("GraphQL call resulted in error.");
-
+    if (res.data.errors) {        
         const errInfo = JSON.stringify(res.data, null, 2)
-        console.error(errInfo);
-
-        throw new Error("GraphQL error: " + errInfo);
+        console.error(
+            "GraphQL call resulted in error.",
+            errInfo
+        );
+        throw new Error("GraphQL error. " + errInfo);
     }
 
     return res.data;
@@ -135,35 +110,33 @@ async function getFieldIds() {
 
     const ownerType = VAR_ESTIMATE_TARGET_OWNER_TYPE.toLowerCase();
 
-    // const query = `
-    //     query($owner: String!, $projectNumber: Int!) {
-    //         user(login: $owner) {
-    //             projectV2(number: $projectNumber) {
-    //                 id
-    //                 fields(first: 100) {
-    //                     nodes {
-    //                         ... on ProjectV2SingleSelectField {
-    //                             id
-    //                             name
-    //                         }
-    //                         ... on ProjectV2FieldCommon {
-    //                             id
-    //                             name
-    //                         }
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //     }
-    // `;
-
-    const query = `{ viewer { login } }`;
-
+    const query = `
+        query($ownerName: String!, $projectNumber: Int!) {
+            `+ownerType+`(login: $ownerName) {
+                projectV2(number: $projectNumber) {
+                    id
+                    fields(first: 100) {
+                        nodes {
+                            ... on ProjectV2SingleSelectField {
+                                id
+                                name
+                            }
+                            ... on ProjectV2FieldCommon {
+                                id
+                                name
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    `;
+    
     const projectNumber = parseInt(VAR_ESTIMATE_TARGET_PROJECT_ID, 10);
 
     console.log("\n===========-===========-===========-===========-===========");
     console.log("Getting GraphQL IDs...");
-    console.log("    Target project security token: '" + TOKEN_PROJECT_ACCESS_RW.slice(0, 4) + "..." + TOKEN_PROJECT_ACCESS_RW.slice(-4) + "'.");
+    console.log("    Target project security token: '..." + TOKEN_PROJECT_ACCESS_RW.slice(-4) + "'.");
     console.log("    Target project owner type: '" + ownerType + "'.");
     console.log("    Target project owner name: '" + VAR_ESTIMATE_TARGET_OWNER_NAME + "'.");
     console.log("    Target project number: " + projectNumber + ".");
@@ -171,13 +144,14 @@ async function getFieldIds() {
     const data = await graphql(
         query,
         {
-            owner: VAR_ESTIMATE_TARGET_OWNER_NAME,
+            ownerName: VAR_ESTIMATE_TARGET_OWNER_NAME,
             projectNumber
         }
     );
 
-    const ownerData = data.data.organization;
-                        //?? data.data.user;
+    const ownerData = (ownerType === "organization") ? data.data.organization
+                        : (ownerType === "user") ? data.data.user
+                        : undefined;
 
     if (!ownerData) {
         console.error("The getFieldIds query did not fail, but the owner data is not available (ownerType = '"+ownerType+"'). Fatal errors will likely follow.");
@@ -190,13 +164,13 @@ async function getFieldIds() {
         if (!field) {
             throw new Error(`Field "${name}" not found`);
         }
-        
+
         return field.id;
     };
 
     return {
         daysEstimateFieldId: getFieldIdByName("Days Estimate"),
-        projectId: data.data.organization.projectV2.id
+        projectId: ownerData.projectV2.id
     };
 }
 
