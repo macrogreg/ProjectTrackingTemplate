@@ -91,7 +91,7 @@ async function graphql(query, variables = {}) {
     console.log("CURLing:");
 
     exec(
-        `curl -s -H "Authorization: Bearer ${TOKEN_PROJECT_ACCESS_RW}" -H "Content-Type: application/json" -d '{"query":"{ viewer { login } }"}' https://api.github.com/graphql`,
+        `curl -s -H "Authorization: Bearer ${TOKEN_PROJECT_ACCESS_RW}" -H "Content-Type: application/json" -d '{"query":"{ viewer { login projectsV2(first: 10) { nodes { number title } } } }"}' https://api.github.com/graphql`,
         (error, stdout, stderr) => {
             console.log("Output:", stdout);
             if (error) {
@@ -155,7 +155,7 @@ async function getFieldIds() {
     //     }
     // `;
 
-    const query = `{ viewer { login projectsV2(first: 10) { nodes { number title } } } }`;
+    const query = `viewer { login }`;
 
     const projectNumber = parseInt(VAR_ESTIMATE_TARGET_PROJECT_ID, 10);
 
