@@ -176,16 +176,22 @@ async function getFieldIds() {
         }
     );
 
-    const fields = data.data.organization.projectV2.fields.nodes;
+    const ownerData = data.data.organization;
+                        //?? data.data.user;
+
+    if (!ownerData) {
+        throw new Error("The getFieldIds query did not fail, but the owner data is not available (ownerType = '"+ownerType+"')");
+    }
 
     const getFieldIdByName = (name) => {
+        const fields = ownerData.projectV2.fields.nodes;
         const field = fields.find(f => f.name.toLowerCase() === name.toLowerCase());
         if (!field) throw new Error(`Field "${name}" not found`);
         return field.id;
     };
 
     return {
-        estimationHackFieldId: getFieldIdByName("Estimation Hack"),
+        daysEstimateFieldId: getFieldIdByName("Days Estimate"),
         projectId: data.data.organization.projectV2.id
     };
 }
@@ -263,7 +269,7 @@ async function getProjectItems(projectId) {
 }
 
 
-async function updateEstimationHack(projectId, itemId, fieldId, value) {
+async function updateDaysEstimate(projectId, itemId, fieldId, value) {
     const mutation = `
         mutation($input: UpdateProjectV2ItemFieldValueInput!) {
             updateProjectV2ItemFieldValue(input: $input) {
@@ -288,7 +294,7 @@ async function updateEstimationHack(projectId, itemId, fieldId, value) {
 
 
 async function main() {
-    const { estimationHackFieldId, projectId } = await getFieldIds();
+    const { daysEstimateFieldId, projectId } = await getFieldIds();
 
     const items = await getProjectItems(projectId);
 
@@ -325,7 +331,7 @@ async function main() {
             const estimate = computeEstimatedCost(size, risk);
             console.log(`Computed Estimate = '${estimate ?? "<not available>"}'.`);
 
-            const existingEstimate = fields.find(f => f.field?.name.toLowerCase() === "estimation hack")?.number;
+            const existingEstimate = fields.find(f => f.field?.name.toLowerCase() === "days estimate")?.number;
             console.log(`Exiting Estimate  = '${existingEstimate ?? "<not available>"}'.`);
 
             const isUpdateNeeded = (existingEstimate !== estimate);
@@ -336,7 +342,7 @@ async function main() {
                 continue;
             }
 
-            await updateEstimationHack(projectId, item.id, estimationHackFieldId, estimate);
+            await updateDaysEstimate(projectId, item.id, daysEstimate, estimate);
             countChangedItems++;
 
             console.log(`Item #${countTotalItems} updated. This was update #${countChangedItems}.`);
