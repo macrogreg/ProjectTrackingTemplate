@@ -6,7 +6,7 @@ It also contains a copy of the documentation.
 When you use that template to create a new project, you must clone this repo, point it to your new target project using Env vars, and configure the security tokens for your new project access (instructions [below](#configuring-target-project-and-security-tokens)).
 
 > #### Related resources
-> * [Project Template: Main View (site)](/users/macrogreg/projects/3?pane=info)
+> * [Project Template: Main View (site)](https://github.com/users/macrogreg/projects/3?pane=info)
 > * [Project Template: Short Description (doc)](./ProjectTemplate.ShortDescription.md)
 > * [Project Template: ReadMe (doc)](./ProjectTemplate.ReadMe.md)
 
