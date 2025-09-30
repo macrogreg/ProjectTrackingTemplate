@@ -1,3 +1,5 @@
+import { exec } from "child_process";
+
 const axios = require('axios');
 
 const TOKEN_PROJECT_ACCESS_RW = process.env.TOKEN_PROJECT_ACCESS_RW;
@@ -86,6 +88,26 @@ async function graphql(query, variables = {}) {
     console.log("VARS:");
     console.log(JSON.stringify(variables));
 
+    console.log("CURLing:");
+
+    exec(
+        `curl -s -H "Authorization: Bearer ${TOKEN_PROJECT_ACCESS_RW}" \
+                -H "Content-Type: application/json" \
+                -d '{"query":"{ viewer { login } }"}' \
+                https://api.github.com/graphql`,
+        (error, stdout, stderr) => {
+            if (error) {
+                console.error("Error:", error.message);                
+            }
+            if (stderr) {
+                console.error("Stderr:", stderr);                
+            }
+            console.log("Output:", stdout);
+        }
+    );
+
+    console.log("AXIOSing:");
+
     const res = await axios.post(
         'https://api.github.com/graphql',
         { query, variables },
@@ -100,7 +122,7 @@ async function graphql(query, variables = {}) {
     if (res.data.errors) {
         console.error("GraphQL call resulted in error.");
 
-        const errInfo = JSON.stringify(res.data.errors, null, 2)
+        const errInfo = JSON.stringify(res.data, null, 2)
         console.error(errInfo);
 
         throw new Error("GraphQL error: " + errInfo);
