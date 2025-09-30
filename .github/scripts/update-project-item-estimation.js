@@ -140,6 +140,7 @@ async function getFieldIds() {
 
     console.log("\n===========-===========-===========-===========-===========");
     console.log("Getting GraphQL IDs:");
+    console.log("    Bearer token: '", TOKEN_PROJECT_ACCESS_RW.slice(0, 4) + "..." + TOKEN_PROJECT_ACCESS_RW.slice(-4) + "'.");
     console.log("    Target project owner type: '" + ownerType + "'.");
     console.log("    Target project owner name: '" + VAR_ESTIMATE_TARGET_OWNER_NAME + "'.");
     console.log("    Target project number: " + projectNumber + ".");
