@@ -91,18 +91,15 @@ async function graphql(query, variables = {}) {
     console.log("CURLing:");
 
     exec(
-        `curl -s -H "Authorization: Bearer ${TOKEN_PROJECT_ACCESS_RW}" \
-                -H "Content-Type: application/json" \
-                -d '{"query":"{ viewer { login } }"}' \
-                https://api.github.com/graphql`,
+        `curl -s -H "Authorization: Bearer ${TOKEN_PROJECT_ACCESS_RW}" -H "Content-Type: application/json" -d '{"query":"{ viewer { login } }"}' https://api.github.com/graphql`,
         (error, stdout, stderr) => {
+            console.log("Output:", stdout);
             if (error) {
                 console.error("Error:", error.message);                
             }
             if (stderr) {
                 console.error("Stderr:", stderr);                
             }
-            console.log("Output:", stdout);
         }
     );
 
