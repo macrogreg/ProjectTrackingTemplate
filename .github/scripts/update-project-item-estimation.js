@@ -180,13 +180,17 @@ async function getFieldIds() {
                         //?? data.data.user;
 
     if (!ownerData) {
-        throw new Error("The getFieldIds query did not fail, but the owner data is not available (ownerType = '"+ownerType+"')");
+        console.error("The getFieldIds query did not fail, but the owner data is not available (ownerType = '"+ownerType+"'). Fatal errors will likely follow.");
     }
 
     const getFieldIdByName = (name) => {
         const fields = ownerData.projectV2.fields.nodes;
         const field = fields.find(f => f.name.toLowerCase() === name.toLowerCase());
-        if (!field) throw new Error(`Field "${name}" not found`);
+
+        if (!field) {
+            throw new Error(`Field "${name}" not found`);
+        }
+        
         return field.id;
     };
 
