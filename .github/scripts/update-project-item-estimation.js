@@ -168,10 +168,16 @@ async function getFieldIds() {
         return field.id;
     };
 
-    return {
+    const fieldIds = {
         daysEstimateFieldId: getFieldIdByName("Days Estimate"),
         projectId: ownerData.projectV2.id
     };
+
+    console.log("Getting GraphQL IDs retrieved.");
+    console.log("    `Days Estimate` field: '" + fieldIds.daysEstimateFieldId + "'.");
+    console.log("    Target project: '" + fieldIds.projectId + "'.");
+
+    return fieldIds;
 }
 
 
