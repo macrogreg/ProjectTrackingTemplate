@@ -1,0 +1,1 @@
+Simple work tracking template that avoids clunkiness around Issues and Millstones and includes convenient estimation automations. ReadMe: https://github.com/users/macrogreg/projects/3?pane=info. Companion repo: https://github.com/macrogreg/ProjectTrackingTemplate.

@@ -1,8 +1,14 @@
 # ProjectTrackingTemplate
 
-This repo contains the automations required for **project "[Project Tracking Template v01](https://github.com/users/macrogreg/projects/3?pane=info)"** and for other projects based on that.
+This repo contains the automations required for **project "[Project Tracking Template v01](https://github.com/users/macrogreg/projects/3?pane=info)"** and for other projects based on that template.  
+It also contains a copy of the documentation.
 
-When you use that template to create a new project, you must clone this repo, point it to your new target project, and configure the security tokens for your project access (details [below](#configuring-target-project-and-security-tokens)).
+When you use that template to create a new project, you must clone this repo, point it to your new target project using Env vars, and configure the security tokens for your new project access (instructions [below](#configuring-target-project-and-security-tokens)).
+
+> #### Related resources
+> * [Project Template: Main View (site)](/users/macrogreg/projects/3?pane=info)
+> * [Project Template: Short Description (doc)](./ProjectTemplate.ShortDescription.md)
+> * [Project Template: ReadMe (doc)](./ProjectTemplate.ReadMe.md)
 
 
 # Included automations
