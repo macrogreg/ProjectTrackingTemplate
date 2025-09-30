@@ -116,7 +116,7 @@ async function getFieldIds() {
 
     const query = `
         query($owner: String!, $projectNumber: Int!) {
-            `+ownerType+`(login: $owner) {
+            user(login: $owner) {
                 projectV2(number: $projectNumber) {
                     id
                     fields(first: 100) {
